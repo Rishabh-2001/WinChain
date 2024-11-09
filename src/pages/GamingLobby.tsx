@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Plus, Users, Lock, Trophy, Clock, ArrowRight, Eye, MessageCircle } from 'lucide-react';
+import { Plus, Users, Lock, Trophy, Clock, ArrowRight, Eye, MessageCircle, X, ChevronRight } from 'lucide-react';
 import CreateRoomModal from '../components/lobby/CreateRoomModal';
 import GameRoomCard from '../components/lobby/GameRoomCard';
 import JoinPrivateRoomModal from '../components/lobby/JoinPrivateRoomModal';
@@ -14,6 +14,7 @@ const GamingLobby = () => {
   const [isJoinModalOpen, setJoinModalOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<string | null>(null);
   const [chatMessage, setChatMessage] = useState('');
+  const [isChatOpen, setIsChatOpen] = useState(true);
 
   const gameNames: Record<string, string> = {
     'tic-tac-toe': 'Tic Tac Toe',
@@ -77,15 +78,39 @@ const GamingLobby = () => {
     { id: 3, user: 'Spectator', message: 'Great game everyone!' }
   ];
 
+  const toggleChat = () => {
+    setIsChatOpen(!isChatOpen);
+  };
+
   return (
-    <div className=" max-w-8xl mx-auto flex h-screen bg-gray-900 ">
+    <div className="relative flex h-[calc(100vh-4rem)] bg-gray-900">
+      {/* Chat Toggle Button (Mobile) */}
+      <button
+        onClick={toggleChat}
+        className={`fixed bottom-4 right-4 z-50 lg:hidden rounded-full p-3 bg-blue-600 text-white shadow-lg ${
+          isChatOpen ? 'hidden' : 'flex'
+        }`}
+      >
+        <MessageCircle className="w-6 h-6" />
+      </button>
+
       {/* Chat Sidebar */}
-      <aside className="w-80 bg-gray-800 border-r border-gray-700 flex flex-col">
-        <div className="p-4 border-b border-gray-700">
+      <aside
+        className={`${
+          isChatOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+        } fixed lg:relative z-40 w-80 h-full bg-gray-800 border-r border-gray-700 flex flex-col transition-transform duration-300 ease-in-out`}
+      >
+        <div className="p-4 border-b border-gray-700 flex justify-between items-center">
           <h2 className="text-xl font-semibold flex items-center gap-2">
             <MessageCircle className="w-5 h-5" />
             Lobby Chat
           </h2>
+          <button
+            onClick={toggleChat}
+            className="lg:hidden text-gray-400 hover:text-white"
+          >
+            <X className="w-6 h-6" />
+          </button>
         </div>
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {mockChatMessages.map((msg) => (
@@ -115,17 +140,19 @@ const GamingLobby = () => {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-y-auto">
-        <div className="p-6 space-y-6">
+      <main className={`flex-1 overflow-y-auto transition-all duration-300 ease-in-out ${
+        isChatOpen ? 'lg:ml-0' : 'ml-0'
+      }`}>
+        <div className="p-4 lg:p-6 space-y-6">
           {/* Header */}
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-white">{gameNames[gameId || '']}</h1>
+              <h1 className="text-2xl lg:text-3xl font-bold text-white">{gameNames[gameId || '']}</h1>
               <p className="text-gray-400">Join a room or create your own game</p>
             </div>
             <button
               onClick={() => setCreateModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
             >
               <Plus className="w-5 h-5" />
               Create Room
@@ -133,8 +160,8 @@ const GamingLobby = () => {
           </div>
 
           {/* Tabs */}
-          <div className="border-b border-gray-700">
-            <nav className="flex gap-4">
+          <div className="border-b border-gray-700 overflow-x-auto">
+            <nav className="flex gap-4 min-w-max">
               {(['live', 'upcoming', 'past'] as TabType[]).map((tab) => (
                 <button
                   key={tab}
@@ -152,7 +179,7 @@ const GamingLobby = () => {
           </div>
 
           {/* Room Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
             {rooms[activeTab].map((room) => (
               <GameRoomCard
                 key={room.id}
@@ -168,6 +195,14 @@ const GamingLobby = () => {
           </div>
         </div>
       </main>
+
+      {/* Overlay for mobile when chat is open */}
+      {isChatOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
+          onClick={toggleChat}
+        />
+      )}
 
       {/* Modals */}
       <CreateRoomModal
