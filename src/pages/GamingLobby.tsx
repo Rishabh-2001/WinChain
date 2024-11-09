@@ -116,58 +116,61 @@ const GamingLobby = () => {
     <div className="relative flex h-[calc(100vh-4rem)] bg-gray-900">
       {/* Chat Toggle Button (Mobile) */}
       <button
-        onClick={toggleChat}
-        className={`fixed bottom-4 right-4 z-50 lg:hidden rounded-full p-3 bg-blue-600 text-white shadow-lg ${
-          isChatOpen ? 'hidden' : 'flex'
-        }`}
-      >
-        <MessageCircle className="w-6 h-6" />
-      </button>
+  onClick={toggleChat}
+  className={`fixed bottom-4 right-4 z-50 lg:hidden rounded-full p-3 bg-blue-600 text-white shadow-lg ${
+    isChatOpen ? 'hidden' : 'flex'
+  }`}
+>
+  <MessageCircle className="w-6 h-6" />
+</button>
 
       {/* Chat Sidebar */}
       <aside
-        className={`${
-          isChatOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0 '
-        } fixed lg:relative z-40 w-80 h-full bg-gray-800 border-r border-gray-700 flex flex-col transition-transform duration-300 ease-in-out overflow-hidden h-webkit-fill-available`}
+  className={`${
+    isChatOpen
+      ? 'translate-x-0 opacity-100'
+      : '-translate-x-full opacity-0'
+  } fixed lg:relative z-40 w-80 h-full bg-gray-800 border-r border-gray-700 flex flex-col transition-all duration-300 ease-in-out overflow-hidden h-webkit-fill-available`}
+>
+  <div className="p-4 border-b border-gray-700 flex justify-between items-center">
+    <h2 className="text-xl font-semibold flex items-center gap-2">
+      <MessageCircle className="w-5 h-5" />
+      Lobby Chat
+    </h2>
+    <button
+      onClick={toggleChat}
+      className="lg:hidden text-gray-400 hover:text-white"
+    >
+      <X className="w-6 h-6" />
+    </button>
+  </div>
+  <div className="flex-1 overflow-y-auto p-4 space-y-4">
+    {mockChatMessages.map((msg) => (
+      <div key={msg.id} className="bg-gray-700/50 rounded-lg p-3">
+        <span className="font-semibold text-blue-400">{msg.user}</span>
+        <p className="text-gray-300">{msg.message}</p>
+      </div>
+    ))}
+  </div>
+  <div className="p-4 border-t border-gray-700">
+    <div className="flex gap-2">
+      <input
+        type="text"
+        value={chatMessage}
+        onChange={(e) => setChatMessage(e.target.value)}
+        placeholder="Type a message..."
+        className="flex-1 bg-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+      <button
+        onClick={() => setChatMessage('')}
+        className="bg-blue-600 hover:bg-blue-700 rounded-lg px-4 py-2"
       >
-        <div className="p-4 border-b border-gray-700 flex justify-between items-center">
-          <h2 className="text-xl font-semibold flex items-center gap-2">
-            <MessageCircle className="w-5 h-5" />
-            Lobby Chat
-          </h2>
-          <button
-            onClick={toggleChat}
-            className="lg:hidden text-gray-400 hover:text-white"
-          >
-            <X className="w-6 h-6" />
-          </button>
-        </div>
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {mockChatMessages.map((msg) => (
-            <div key={msg.id} className="bg-gray-700/50 rounded-lg p-3">
-              <span className="font-semibold text-blue-400">{msg.user}</span>
-              <p className="text-gray-300">{msg.message}</p>
-            </div>
-          ))}
-        </div>
-        <div className="p-4 border-t border-gray-700">
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={chatMessage}
-              onChange={(e) => setChatMessage(e.target.value)}
-              placeholder="Type a message..."
-              className="flex-1 bg-gray-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-            <button
-              onClick={() => setChatMessage('')}
-              className="bg-blue-600 hover:bg-blue-700 rounded-lg px-4 py-2"
-            >
-              Send
-            </button>
-          </div>
-        </div>
-      </aside>
+        Send
+      </button>
+    </div>
+  </div>
+</aside>
+
 
       {/* Main Content */}
       <main className={`flex-1 overflow-y-auto transition-all duration-300 ease-in-out ${
@@ -228,11 +231,12 @@ const GamingLobby = () => {
 
       {/* Overlay for mobile when chat is open */}
       {isChatOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-30 lg:hidden"
-          onClick={toggleChat}
-        />
-      )}
+  <div
+    className="fixed inset-0 bg-black/50 z-30 lg:hidden transition-opacity duration-300 ease-in-out"
+    onClick={toggleChat}
+    style={{ opacity: isChatOpen ? 1 : 0 }} // Ensure fade-in effect
+  />
+)}
 
       {/* Modals */}
       <CreateRoomModal
