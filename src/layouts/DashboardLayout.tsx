@@ -9,7 +9,7 @@ const DashboardLayout = () => {
       <BackgroundElements />
       <Navbar />
       
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-6">
         <div className="w-4xl mx-auto relative">
           <Outlet />
         </div>

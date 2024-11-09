@@ -113,11 +113,11 @@ const GamingLobby = () => {
   };
 
   return (
-    <div className="relative flex h-[calc(100vh-4rem)] bg-gray-900">
+    <div className="relative flex h-[calc(100vh-6rem)] bg-gray-900">
       {/* Chat Toggle Button (Mobile) */}
       <button
   onClick={toggleChat}
-  className={`fixed bottom-4 right-4 z-50 lg:hidden rounded-full p-3 bg-blue-600 text-white shadow-lg ${
+  className={`fixed bottom-4 right-4 z-50 rounded-full p-3 bg-blue-600 text-white shadow-lg ${
     isChatOpen ? 'hidden' : 'flex'
   }`}
 >
@@ -144,7 +144,7 @@ const GamingLobby = () => {
       <X className="w-6 h-6" />
     </button>
   </div>
-  <div className="flex-1 overflow-y-auto p-4 space-y-4">
+  <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-none">
     {mockChatMessages.map((msg) => (
       <div key={msg.id} className="bg-gray-700/50 rounded-lg p-3">
         <span className="font-semibold text-blue-400">{msg.user}</span>
