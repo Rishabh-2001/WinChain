@@ -4,5 +4,16 @@ export default {
   theme: {
     extend: {},
   },
-  plugins: [],
+  plugins: [
+    function ({ addUtilities }) {
+      addUtilities({
+        '.h-webkit-fill-available': {
+          height: '-webkit-fill-available',
+        },
+        '.min-h-webkit-fill-available': {
+          minHeight: '-webkit-fill-available',
+        },
+      });
+    },
+  ],
 };

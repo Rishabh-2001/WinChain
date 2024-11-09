@@ -75,8 +75,38 @@ const GamingLobby = () => {
   const mockChatMessages = [
     { id: 1, user: 'Player123', message: 'Anyone up for a quick match?' },
     { id: 2, user: 'GameMaster', message: 'Tournament starting in 10 minutes!' },
-    { id: 3, user: 'Spectator', message: 'Great game everyone!' }
+    { id: 3, user: 'Spectator', message: 'Great game everyone!' },
+    { id: 4, user: 'Player456', message: 'I’m in for the quick match!' },
+    { id: 5, user: 'Player789', message: 'Same here, ready to play!' },
+    { id: 6, user: 'GameMaster', message: 'Alright, everyone, let’s get ready. First match starts in 5 minutes.' },
+    { id: 7, user: 'Player123', message: 'Any bets on who’s going to win this one?' },
+    { id: 8, user: 'Spectator', message: 'I’m betting on Player456. They’ve been on fire today!' },
+    { id: 9, user: 'Player456', message: 'Haha, thanks! But I’m sure Player789 will bring the heat.' },
+    { id: 10, user: 'Player789', message: 'No pressure, but I’ve been practicing non-stop!' },
+    { id: 11, user: 'Spectator', message: 'Exciting! I can’t wait to see this battle!' },
+    { id: 12, user: 'GameMaster', message: 'Alright, the match is starting! Everyone, let’s play fair and have fun!' },
+    { id: 13, user: 'Player123', message: 'Good luck, everyone!' },
+    { id: 14, user: 'Player456', message: 'Let’s do this!' },
+    { id: 15, user: 'Player789', message: 'May the best player win!' },
+    { id: 16, user: 'GameMaster', message: 'Match is now live! Remember to stay respectful in the chat.' },
+    { id: 17, user: 'Spectator', message: 'Ohhh, looks like Player456 just got the first point!' },
+    { id: 18, user: 'Player123', message: 'I knew Player456 was good, but wow!' },
+    { id: 19, user: 'Player789', message: 'It’s just the warm-up, don’t count me out yet!' },
+    { id: 20, user: 'Player456', message: 'I’ll take the lead while I can! Haha.' },
+    { id: 21, user: 'Spectator', message: 'This is getting intense, I love it!' },
+    { id: 22, user: 'GameMaster', message: 'Stay focused, folks. The match is only halfway done!' },
+    { id: 23, user: 'Player123', message: 'This match is crazy, who’s going to take the lead next?' },
+    { id: 24, user: 'Player789', message: 'I’ll catch up, just you wait!' },
+    { id: 25, user: 'Spectator', message: 'I think Player789 has a secret strategy we don’t know about.' },
+    { id: 26, user: 'Player456', message: 'I’m just trying to keep my focus. The game’s not over yet!' },
+    { id: 27, user: 'Player123', message: 'So close! I can’t tell who will win this round.' },
+    { id: 28, user: 'GameMaster', message: 'Match is over! Congrats to Player456 for the win!' },
+    { id: 29, user: 'Spectator', message: 'Well played, Player456! You earned that one.' },
+    { id: 30, user: 'Player123', message: 'Good game, everyone! That was a tough one.' },
+    { id: 31, user: 'Player789', message: 'I’ll get you next time, Player456! Good game.' },
+    { id: 32, user: 'Player456', message: 'Thanks, everyone. That was an awesome match!' },
   ];
+  
 
   const toggleChat = () => {
     setIsChatOpen(!isChatOpen);
@@ -97,8 +127,8 @@ const GamingLobby = () => {
       {/* Chat Sidebar */}
       <aside
         className={`${
-          isChatOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-        } fixed lg:relative z-40 w-80 h-full bg-gray-800 border-r border-gray-700 flex flex-col transition-transform duration-300 ease-in-out`}
+          isChatOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0 '
+        } fixed lg:relative z-40 w-80 h-full bg-gray-800 border-r border-gray-700 flex flex-col transition-transform duration-300 ease-in-out overflow-hidden h-webkit-fill-available`}
       >
         <div className="p-4 border-b border-gray-700 flex justify-between items-center">
           <h2 className="text-xl font-semibold flex items-center gap-2">
