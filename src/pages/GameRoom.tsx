@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Users, Clock, Trophy, MessageCircle, X } from 'lucide-react';
-
+// import TicTacToe from './components/TicTacToe';
+import TicTacToe from '../games/tic-tac-toe/components/TicTacToeGame';
+import RockPaperScissors from '../games/rock-paper-scissors/components/RockPaperScissors';
+import DiceBetting from '../games/dice-betting/components/DiceBetting';
+import LoadGame from '../components/games/LoadGame';
 interface Player {
   id: string;
   name: string;
@@ -38,7 +42,7 @@ const GameRoom = () => {
         { id: '1', name: 'Player 1', avatar: '/avatars/1.png', status: 'ready' },
         { id: '2', name: 'Player 2', avatar: '/avatars/2.png', status: 'waiting' },
       ],
-      status: 'waiting',
+      status: 'in-progress',
       isPrivate: false,
       level: 'Casual',
       createdAt: new Date(),
@@ -97,14 +101,14 @@ const GameRoom = () => {
                     </p>
                   </div>
                 ) : (
-                  <div>Game Interface Here</div>
+                    <LoadGame gameId={gameId} players={room.currentPlayers}  />
                 )}
               </div>
             </div>
           </div>
 
           {/* Players & Chat */}
-          <div className="space-y-6">
+          <div className="space-y-0">
             {/* Mobile Chat Toggle */}
             <div className="lg:hidden flex justify-end">
               <button
@@ -144,7 +148,7 @@ const GameRoom = () => {
               {/* Chat */}
               <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
                 <h3 className="text-xl font-semibold mb-4">Chat</h3>
-                <div className="h-[300px] bg-gray-900/50 rounded-lg mb-4 p-4 overflow-y-auto border border-gray-700/50">
+                <div className="max-h-[300px] min-h-[140px] bg-gray-900/50 rounded-lg mb-4 p-4 overflow-y-auto border border-gray-700/50">
                   {/* Chat messages would go here */}
                 </div>
                 <div className="flex gap-2">

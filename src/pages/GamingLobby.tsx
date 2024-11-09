@@ -217,6 +217,7 @@ const GamingLobby = () => {
               <GameRoomCard
                 key={room.id}
                 room={room}
+                gameId={gameId}
                 onJoin={() => {
                   if (room.isPrivate) {
                     setSelectedRoom(room.id);
