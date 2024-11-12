@@ -33,7 +33,8 @@ console.log("isNewUser", isNewUser);
     const data = response.data;
 
     if (response.status === 200) {
-        const newBalance=  100;
+        // console.log(">>>RESSSS", response?.data?.balance);
+        const newBalance=  response?.data?.balance;
         setBalance(newBalance);
       toast.custom((t) => (
         <div className={`${t.visible ? 'animate-enter' : 'animate-leave'} 
