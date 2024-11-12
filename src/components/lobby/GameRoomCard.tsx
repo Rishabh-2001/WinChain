@@ -16,17 +16,16 @@ interface GameRoomProps {
     winner?: string;
   };
   onJoin: () => void;
-  gameId: string;
 }
 
-const GameRoomCard: React.FC<GameRoomProps> = ({ room, onJoin, gameId }) => {
+const GameRoomCard: React.FC<GameRoomProps> = ({ room, onJoin }) => {
   const navigate = useNavigate();
 
   const handleJoin = () => {
     if (room.isPrivate) {
       onJoin();
     } else {
-      navigate(`/games/${gameId}/room/${room.id}`);
+      navigate(`/games/${room.id}/room/${room.id}`);
     }
   };
 

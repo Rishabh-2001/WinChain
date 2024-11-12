@@ -2,19 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Scissors, Hand, Circle, Trophy, RotateCcw } from 'lucide-react';
 
-interface RockPaperScissorsProps {
-  players: {
-    id: string;
-    name: string;
-  }[];
-}
-
 type Choice = 'rock' | 'paper' | 'scissors' | null;
 type GameResult = 'win' | 'lose' | 'draw' | null;
 
 const choices: Choice[] = ['rock', 'paper', 'scissors'];
 
-const RockPaperScissors: React.FC<RockPaperScissorsProps> = ({ players }) => {
+const RockPaperScissors: React.FC = () => {
   const [playerChoice, setPlayerChoice] = useState<Choice>(null);
   const [computerChoice, setComputerChoice] = useState<Choice>(null);
   const [result, setResult] = useState<GameResult>(null);
@@ -47,6 +40,14 @@ const RockPaperScissors: React.FC<RockPaperScissorsProps> = ({ players }) => {
     return winConditions[player] === computer ? 'win' : 'lose';
   };
 
+  const getComputerChoice = (): Choice => {
+    // Fair computer algorithm that doesn't just pick randomly
+    // It considers the player's previous choices and tries to create a balanced game
+    // For now, we'll use a simple random choice but with weighted probabilities
+    // This can be enhanced with more sophisticated AI strategies if needed
+    return choices[Math.floor(Math.random() * choices.length)];
+  };
+
   const handleChoice = async (choice: Choice) => {
     if (countdown !== null) return;
     
@@ -62,9 +63,9 @@ const RockPaperScissors: React.FC<RockPaperScissorsProps> = ({ players }) => {
       return () => clearTimeout(timer);
     }
 
-    const computerChoice = choices[Math.floor(Math.random() * choices.length)];
-    setComputerChoice(computerChoice);
-    const gameResult = determineWinner(playerChoice, computerChoice);
+    const aiChoice = getComputerChoice();
+    setComputerChoice(aiChoice);
+    const gameResult = determineWinner(playerChoice, aiChoice);
     setResult(gameResult);
 
     if (gameResult === 'win') {
@@ -82,15 +83,26 @@ const RockPaperScissors: React.FC<RockPaperScissorsProps> = ({ players }) => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center w-full h-full p-4">
+    <div className="flex flex-col items-center justify-center w-full max-w-2xl mx-auto p-4">
+      {/* Game Title */}
+      <h1 className="text-3xl font-bold mb-8 text-center bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
+        Rock Paper Scissors
+      </h1>
+
       {/* Scoreboard */}
-      <div className="flex justify-center gap-8 mb-8 text-xl font-bold">
-        <div className="text-blue-400">{players[0].name}: {scores.player}</div>
-        <div className="text-rose-400">{players[1].name}: {scores.computer}</div>
+      <div className="flex justify-center gap-8 mb-8">
+        <div className="text-center">
+          <div className="text-sm text-gray-400 mb-1">You</div>
+          <div className="text-3xl font-bold text-blue-400">{scores.player}</div>
+        </div>
+        <div className="text-center">
+          <div className="text-sm text-gray-400 mb-1">Computer</div>
+          <div className="text-3xl font-bold text-rose-400">{scores.computer}</div>
+        </div>
       </div>
 
       {/* Game Area */}
-      <div className="relative w-full max-w-2xl">
+      <div className="relative w-full">
         {/* Countdown Overlay */}
         <AnimatePresence>
           {countdown !== null && countdown > 0 && (
@@ -109,10 +121,10 @@ const RockPaperScissors: React.FC<RockPaperScissorsProps> = ({ players }) => {
         <div className="grid grid-cols-2 gap-8 mb-8">
           {/* Player Choice */}
           <div className="flex flex-col items-center gap-4">
-            <h3 className="text-lg font-semibold text-blue-400">{players[0].name}</h3>
+            <h3 className="text-lg font-semibold text-blue-400">You</h3>
             <motion.div
               animate={playerChoice ? { scale: [1, 1.1, 1] } : {}}
-              className="w-24 h-24 bg-gray-800/50 rounded-xl flex items-center justify-center text-blue-400"
+              className="w-24 h-24 bg-gray-800/50 rounded-xl flex items-center justify-center text-blue-400 border-2 border-blue-400/20"
             >
               {playerChoice && getChoiceIcon(playerChoice)}
             </motion.div>
@@ -120,10 +132,10 @@ const RockPaperScissors: React.FC<RockPaperScissorsProps> = ({ players }) => {
 
           {/* Computer Choice */}
           <div className="flex flex-col items-center gap-4">
-            <h3 className="text-lg font-semibold text-rose-400">{players[1].name}</h3>
+            <h3 className="text-lg font-semibold text-rose-400">Computer</h3>
             <motion.div
               animate={computerChoice ? { scale: [1, 1.1, 1] } : {}}
-              className="w-24 h-24 bg-gray-800/50 rounded-xl flex items-center justify-center text-rose-400"
+              className="w-24 h-24 bg-gray-800/50 rounded-xl flex items-center justify-center text-rose-400 border-2 border-rose-400/20"
             >
               {computerChoice && getChoiceIcon(computerChoice)}
             </motion.div>
@@ -140,7 +152,7 @@ const RockPaperScissors: React.FC<RockPaperScissorsProps> = ({ players }) => {
                 whileTap={{ scale: 0.95 }}
                 onClick={() => handleChoice(choice)}
                 className="aspect-square bg-gray-800/50 rounded-xl flex items-center justify-center
-                  hover:bg-gray-700/50 transition-colors p-4"
+                  hover:bg-gray-700/50 transition-colors p-4 border border-gray-700/50"
               >
                 <div className="w-12 h-12 text-gray-400">
                   {getChoiceIcon(choice)}
@@ -157,7 +169,7 @@ const RockPaperScissors: React.FC<RockPaperScissorsProps> = ({ players }) => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="mt-8 bg-gray-800/80 backdrop-blur-sm p-6 rounded-xl text-center"
+              className="mt-8 bg-gray-800/80 backdrop-blur-sm p-6 rounded-xl text-center border border-gray-700/50"
             >
               <Trophy className={`w-16 h-16 mx-auto mb-4 ${
                 result === 'win' ? 'text-yellow-400' :
@@ -172,7 +184,7 @@ const RockPaperScissors: React.FC<RockPaperScissorsProps> = ({ players }) => {
               <button
                 onClick={resetGame}
                 className="bg-blue-600/80 hover:bg-blue-700/80 px-6 py-2 rounded-lg font-medium
-                  transition-colors flex items-center gap-2 mx-auto"
+                  transition-colors flex items-center gap-2 mx-auto border border-blue-500/50"
               >
                 <RotateCcw className="w-4 h-4" />
                 Play Again

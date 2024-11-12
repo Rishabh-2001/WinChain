@@ -18,37 +18,150 @@ const winningCombinations = [
 const TicTacToe: React.FC<TicTacToeProps> = ({ players }) => {
   const [board, setBoard] = useState<(string | null)[]>(Array(9).fill(null));
   const [currentPlayer, setCurrentPlayer] = useState<'X' | 'O'>('X');
-  const [winner, setWinner] = useState<string | null>(null);
+  const [winner, setWinner] = useState<'X' | 'O' | null>(null);
   const [winningLine, setWinningLine] = useState<number[] | null>(null);
   const [isDraw, setIsDraw] = useState(false);
+  const [isComputerThinking, setIsComputerThinking] = useState(false);
+  const [difficulty] = useState<'hard' | 'medium'>('hard');
 
-  const checkWinner = (squares: (string | null)[]) => {
+  const findWinningLines = (squares: (string | null)[]): number[][] => {
+    const winningLines: number[][] = [];
     for (const combo of winningCombinations) {
       const [a, b, c] = combo;
       if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-        setWinningLine(combo);
-        return squares[a];
+        winningLines.push(combo);
       }
+    }
+    return winningLines;
+  };
+
+  const checkWinner = (squares: (string | null)[]): string | null => {
+    const winningLines = findWinningLines(squares);
+    if (winningLines.length > 0) {
+      return squares[winningLines[0][0]];
     }
     return null;
   };
 
-  const handleClick = (index: number) => {
-    if (board[index] || winner) return;
+  const minimax = (
+    squares: (string | null)[],
+    depth: number,
+    isMaximizing: boolean,
+    alpha: number = -Infinity,
+    beta: number = Infinity
+  ): number => {
+    const winner = checkWinner(squares);
+    
+    // Terminal states
+    if (winner === 'O') return 10 - depth;
+    if (winner === 'X') return depth - 10;
+    if (!squares.includes(null)) return 0;
+    
+    if (isMaximizing) {
+      let bestScore = -Infinity;
+      for (let i = 0; i < squares.length; i++) {
+        if (!squares[i]) {
+          squares[i] = 'O';
+          const score = minimax(squares, depth + 1, false, alpha, beta);
+          squares[i] = null;
+          bestScore = Math.max(bestScore, score);
+          alpha = Math.max(alpha, bestScore);
+          if (beta <= alpha) break;
+        }
+      }
+      return bestScore;
+    } else {
+      let bestScore = Infinity;
+      for (let i = 0; i < squares.length; i++) {
+        if (!squares[i]) {
+          squares[i] = 'X';
+          const score = minimax(squares, depth + 1, true, alpha, beta);
+          squares[i] = null;
+          bestScore = Math.min(bestScore, score);
+          beta = Math.min(beta, bestScore);
+          if (beta <= alpha) break;
+        }
+      }
+      return bestScore;
+    }
+  };
+
+  const findBestMove = (squares: (string | null)[]): number => {
+    let bestScore = -Infinity;
+    let bestMove = -1;
+
+    // First move optimization - take center if available
+    if (squares.filter(square => square !== null).length === 0) {
+      return 4; // Center position
+    }
+
+    // If it's medium difficulty, occasionally make a random move
+    if (difficulty === 'medium' && Math.random() < 0.3) {
+      const emptyCells = squares
+        .map((square, index) => (square === null ? index : null))
+        .filter((index): index is number => index !== null);
+      return emptyCells[Math.floor(Math.random() * emptyCells.length)];
+    }
+
+    for (let i = 0; i < squares.length; i++) {
+      if (!squares[i]) {
+        squares[i] = 'O';
+        const score = minimax(squares, 0, false);
+        squares[i] = null;
+        
+        if (score > bestScore) {
+          bestScore = score;
+          bestMove = i;
+        }
+      }
+    }
+    return bestMove;
+  };
+
+  const makeComputerMove = async () => {
+    setIsComputerThinking(true);
+    await new Promise(resolve => setTimeout(resolve, 600));
 
     const newBoard = [...board];
-    newBoard[index] = currentPlayer;
+    const move = findBestMove(newBoard);
+    newBoard[move] = 'O';
     setBoard(newBoard);
 
     const gameWinner = checkWinner(newBoard);
     if (gameWinner) {
-      setWinner(players[gameWinner === 'X' ? 0 : 1].name);
+      setWinner(gameWinner as 'X' | 'O');
+      setWinningLine(findWinningLines(newBoard)[0]);
     } else if (!newBoard.includes(null)) {
       setIsDraw(true);
     } else {
-      setCurrentPlayer(currentPlayer === 'X' ? 'O' : 'X');
+      setCurrentPlayer('X');
+    }
+    setIsComputerThinking(false);
+  };
+
+  const handleClick = (index: number) => {
+    if (board[index] || winner || currentPlayer === 'O' || isComputerThinking) return;
+
+    const newBoard = [...board];
+    newBoard[index] = 'X';
+    setBoard(newBoard);
+
+    const gameWinner = checkWinner(newBoard);
+    if (gameWinner) {
+      setWinner(gameWinner as 'X' | 'O');
+      setWinningLine(findWinningLines(newBoard)[0]);
+    } else if (!newBoard.includes(null)) {
+      setIsDraw(true);
+    } else {
+      setCurrentPlayer('O');
     }
   };
+
+  useEffect(() => {
+    if (currentPlayer === 'O' && !winner && !isDraw) {
+      makeComputerMove();
+    }
+  }, [currentPlayer]);
 
   const resetGame = () => {
     setBoard(Array(9).fill(null));
@@ -56,6 +169,11 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ players }) => {
     setWinner(null);
     setWinningLine(null);
     setIsDraw(false);
+    setIsComputerThinking(false);
+  };
+
+  const isWinningCell = (index: number) => {
+    return winningLine?.includes(index);
   };
 
   return (
@@ -68,7 +186,13 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ players }) => {
             animate={{ opacity: 1, y: 0 }}
             className="text-xl font-semibold"
           >
-            Current Turn: {players[currentPlayer === 'X' ? 0 : 1].name}
+            {isComputerThinking ? (
+              <span className="text-blue-400">Computer is thinking...</span>
+            ) : (
+              <span>
+                Current Turn: {currentPlayer === 'X' ? 'Your' : "Computer's"} Turn
+              </span>
+            )}
           </motion.div>
         )}
       </div>
@@ -78,11 +202,14 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ players }) => {
         {board.map((cell, index) => (
           <motion.button
             key={index}
-            whileHover={!cell && !winner ? { scale: 1.05 } : {}}
-            whileTap={!cell && !winner ? { scale: 0.95 } : {}}
-            className={`aspect-square bg-gray-800/50 rounded-xl flex items-center justify-center
-              ${winningLine?.includes(index) ? 'ring-2 ring-green-500' : 'hover:bg-gray-700/50'}
-              transition-colors duration-200`}
+            whileHover={!cell && !winner && currentPlayer === 'X' && !isComputerThinking ? { scale: 1.05 } : {}}
+            whileTap={!cell && !winner && currentPlayer === 'X' && !isComputerThinking ? { scale: 0.95 } : {}}
+            className={`aspect-square rounded-xl flex items-center justify-center
+              transition-all duration-200
+              ${!cell && !winner && currentPlayer === 'X' && !isComputerThinking 
+                ? 'hover:bg-gray-700/50 cursor-pointer bg-gray-800/50' 
+                : 'cursor-not-allowed bg-gray-800/50'}
+              ${isWinningCell(index) ? 'bg-green-500/20 border-2 border-green-500' : ''}`}
             onClick={() => handleClick(index)}
           >
             {cell && (
@@ -92,9 +219,9 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ players }) => {
                 className="w-12 h-12 sm:w-16 sm:h-16"
               >
                 {cell === 'X' ? (
-                  <X className="w-full h-full text-blue-400" />
+                  <X className={`w-full h-full ${isWinningCell(index) ? 'text-green-400' : 'text-blue-400'}`} />
                 ) : (
-                  <Circle className="w-full h-full text-rose-400" />
+                  <Circle className={`w-full h-full ${isWinningCell(index) ? 'text-green-400' : 'text-rose-400'}`} />
                 )}
               </motion.div>
             )}
@@ -107,13 +234,19 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ players }) => {
         <motion.div
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="mt-8 bg-gray-800/80 backdrop-blur-2xl p-6 rounded-xl text-center max-w-sm w-full absolute "
+          className="mt-8 bg-gray-800/80 backdrop-blur-2xl p-6 rounded-xl text-center max-w-sm w-full absolute"
         >
           {winner ? (
             <>
               <Trophy className="w-16 h-16 text-yellow-400 mx-auto mb-4" />
-              <h3 className="text-2xl font-bold mb-2">🎉 {winner} Wins! 🎉</h3>
-              <p className="text-gray-400 mb-4">Congratulations on your victory!</p>
+              <h3 className="text-2xl font-bold mb-2">
+                {winner === 'O' ? '🤖 Computer Wins!' : '🎉 You Win! 🎉'}
+              </h3>
+              <p className="text-gray-400 mb-4">
+                {winner === 'O' 
+                  ? 'The computer outsmarted you this time!' 
+                  : 'Congratulations! You beat the AI!'}
+              </p>
             </>
           ) : (
             <>
@@ -122,7 +255,7 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ players }) => {
                 <Circle className="w-full h-full text-rose-400 absolute" />
               </div>
               <h3 className="text-2xl font-bold mb-2">It's a Draw!</h3>
-              <p className="text-gray-400 mb-4">Great game by both players!</p>
+              <p className="text-gray-400 mb-4">A perfect match between human and machine!</p>
             </>
           )}
           <button

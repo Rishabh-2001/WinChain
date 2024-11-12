@@ -5,10 +5,12 @@ import Dashboard from './pages/Dashboard';
 import GamingLobby from './pages/GamingLobby';
 import GameRoom from './pages/GameRoom';
 import Wallet from './pages/Wallet';
+import { Toaster } from 'react-hot-toast';
 
 function App() {
   return (
     <BrowserRouter>
+          <Toaster position="top-center" />
       <Routes>
         <Route path="/" element={<DashboardLayout />}>
           <Route index element={<Dashboard />} />

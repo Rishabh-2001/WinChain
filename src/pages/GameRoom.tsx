@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Users, Clock, Trophy, MessageCircle, X } from 'lucide-react';
-// import TicTacToe from './components/TicTacToe';
-import TicTacToe from '../games/tic-tac-toe/components/TicTacToeGame';
-import RockPaperScissors from '../games/rock-paper-scissors/components/RockPaperScissors';
-import DiceBetting from '../games/dice-betting/components/DiceBetting';
 import LoadGame from '../components/games/LoadGame';
+import BetInfo from '../components/lobby/BetInfo';
+
 interface Player {
   id: string;
   name: string;
@@ -28,9 +26,11 @@ interface GameRoom {
 const GameRoom = () => {
   const { gameId, roomId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [room, setRoom] = useState<GameRoom | null>(null);
   const [chatMessage, setChatMessage] = useState('');
   const [isChatVisible, setIsChatVisible] = useState(true);
+  const betAmount = location.state?.betAmount || 10;
 
   useEffect(() => {
     setRoom({
@@ -101,14 +101,16 @@ const GameRoom = () => {
                     </p>
                   </div>
                 ) : (
-                    <LoadGame gameId={gameId} players={room.currentPlayers}  />
+                  <div>
+                      <LoadGame gameId={gameId} players={room.currentPlayers}  />
+                  </div>
                 )}
               </div>
             </div>
           </div>
 
           {/* Players & Chat */}
-          <div className="space-y-0">
+          <div className="space-y-2">
             {/* Mobile Chat Toggle */}
             <div className="lg:hidden flex justify-end">
               <button
@@ -120,6 +122,9 @@ const GameRoom = () => {
             </div>
 
             <div className={`space-y-6 ${isChatVisible ? 'block' : 'hidden lg:block'}`}>
+                              {/* Bet Information */}
+              <BetInfo playerBet={betAmount} computerBet={betAmount} />
+
               {/* Players */}
               <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
                 <h3 className="text-xl font-semibold mb-4">Players</h3>
@@ -148,7 +153,7 @@ const GameRoom = () => {
               {/* Chat */}
               <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50">
                 <h3 className="text-xl font-semibold mb-4">Chat</h3>
-                <div className="max-h-[300px] min-h-[140px] bg-gray-900/50 rounded-lg mb-4 p-4 overflow-y-auto border border-gray-700/50">
+                <div className="h-[300px] bg-gray-900/50 rounded-lg mb-4 p-4 overflow-y-auto border border-gray-700/50">
                   {/* Chat messages would go here */}
                 </div>
                 <div className="flex gap-2">
