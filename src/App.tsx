@@ -4,11 +4,22 @@ import DashboardLayout from './layouts/DashboardLayout';
 import Dashboard from './pages/Dashboard';
 import GamingLobby from './pages/GamingLobby';
 import GameRoom from './pages/GameRoom';
+import { MetaMaskProvider } from '@metamask/sdk-react';
 import Wallet from './pages/Wallet';
 import { Toaster } from 'react-hot-toast';
 
 function App() {
   return (
+    <MetaMaskProvider
+      debug={false}
+      sdkOptions={{
+        dappMetadata: {
+          name: 'My Web3 App',
+          url: window.location.href,
+        },
+        checkInstallationImmediately: false,
+      }}
+    >
     <BrowserRouter>
           <Toaster position="top-center" />
       <Routes>
@@ -21,6 +32,7 @@ function App() {
         </Route>
       </Routes>
     </BrowserRouter>
+        </MetaMaskProvider>
   );
 }
 

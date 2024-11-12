@@ -1,77 +1,94 @@
-import React, { useState, useEffect } from 'react';
-import { Wallet } from 'lucide-react';  // Assuming this is for your wallet icon
+import React from 'react';
+import { Wallet } from 'lucide-react';
+import { useSDK } from '@metamask/sdk-react';
 import { ethers } from 'ethers';
 
-const WalletButton = ({setConnected, setUserAccount}) => {
-  const [account, setAccount] = useState('');   // Stores user wallet address
-  const [connecting, setConnecting] = useState(false);     // To show loading state
-  const [error, setError] = useState(null); 
+interface WalletButtonProps {
+  setConnected?: (connected: boolean) => void;
+  setUserAccount?: (account: string) => void;
+}
 
-  // Function to connect wallet using MetaMask
+const WalletButton: React.FC<WalletButtonProps> = ({ setConnected, setUserAccount }) => {
+  const { sdk, connected, connecting, account, chainId, provider } = useSDK();
+  // const [currentUser,setCurrentUser] = useState('')
+
   const connectWallet = async () => {
-    // Check if MetaMask is available in the browser
-    if (!window.ethereum) {
-      alert("MetaMask is not installed. Please install MetaMask to use this.");
-      return;
-    }
-
-    setConnecting(true); // Start the loading state
-    setError(null);      // Clear any previous errors
-
     try {
-      // Requesting user's MetaMask account
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const signer = provider.getSigner();
+      if (!sdk) {
+        throw new Error("MetaMask SDK not initialized");
+      }
 
-      // Requesting the user to connect their MetaMask account
-      await provider.send("eth_requestAccounts", []);
+      // Connect and get accounts
+      const accounts = await sdk.connect();
+      
+      // If we have the setter functions, call them
+      if (setConnected) setConnected(true);
+      if (setUserAccount && accounts?.[0]) setUserAccount(accounts[0]);
+      console.log("accounts",accounts);
+      
 
-      // Getting the address of the connected wallet
-      const userAddress = await signer.getAddress();
-      setUserAccount(userAddress); // Update the state with the connected account
-      setAccount(userAddress)
-      setConnected(true);
+      // Get the provider and signer if needed
+      if (provider) {
+        const ethersProvider = new ethers.providers.Web3Provider(provider);
+        const signer = ethersProvider.getSigner();
+        console.log("signer",signer);
+        
+        // You can use the signer here for transactions if needed
+      }
     } catch (err) {
-      console.error("Error connecting wallet", err);
-      setError("Failed to connect wallet. Please try again.");
-    } finally {
-      setConnecting(false); // End loading state
+      console.error('Failed to connect wallet:', err);
     }
   };
 
-   
- 
+  const disconnectWallet = async () => {
+    try {
+      if (!sdk) return;
+      await sdk.terminate();
+      if (setConnected) setConnected(false);
+      if (setUserAccount) setUserAccount('');
+    } catch (err) {
+      console.error('Failed to disconnect:', err);
+    }
+  };
+
   // Display the account in shortened format
-  const renderAccount = () => {
-    if (!account) return null;
-    return `${account.slice(0, 6)}...${account.slice(-4)}`;
+  const renderAccount = (address: string) => {
+    return `${address?.slice(0, 6)}...${address?.slice(-4)}`;
   };
 
   return (
-    <div>
-      {error && <div className="text-red-500">{error}</div>}  {/* Display error if any */}
-      
+    <div className="w-full">
       <button 
-        onClick={connectWallet}
+        onClick={connected ? disconnectWallet : connectWallet}
         disabled={connecting}
-        className={`px-4 py-2 rounded-lg transition-colors flex items-center gap-2 ${
-          account 
-            ? 'bg-green-600 hover:bg-green-700 text-white' 
+        className={`
+          w-full px-6 py-3 rounded-xl transition-all duration-200 
+          flex items-center justify-center gap-3
+          ${connected 
+            ? 'bg-blue-600/20 hover:bg-blue-600/30 text-blue-400' 
             : connecting 
-              ? 'bg-gray-600 cursor-not-allowed' 
-              : 'bg-blue-600 hover:bg-blue-700 text-white'
-        }`}
+              ? 'bg-gray-600/20 cursor-not-allowed text-gray-400' 
+              : 'bg-blue-600 hover:bg-blue-700 text-white hover:shadow-lg hover:shadow-blue-600/25'
+          }
+          font-medium text-lg
+        `}
       >
         <Wallet className="h-5 w-5" />
         
         <span className="hidden sm:inline">
-          {connecting ? 'Connecting...' : account ? renderAccount() : 'Connect Wallet'}
+          {connecting ? 'Connecting...' : connected ? renderAccount(account!) : 'Connect Wallet'}
         </span>
         
         <span className="sm:hidden">
-          {connecting ? '...' : account ? `${account.slice(0, 4)}...` : 'Connect'}
+          {connecting ? '...' : connected ? `${account?.slice(0, 4)}...` : 'Connect'}
         </span>
       </button>
+
+      {/* {connected && chainId && (
+        <div className="mt-2 text-center text-sm text-gray-400">
+          Connected to network ID: {chainId}
+        </div>
+      )} */}
     </div>
   );
 };
