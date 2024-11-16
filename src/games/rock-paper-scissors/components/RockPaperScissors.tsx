@@ -1,18 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Scissors, Hand, Circle, Trophy, RotateCcw } from 'lucide-react';
-
+import walletContext from '../../../contexts/WalletContext'
+import {depositIntoWallet, withdrawFromWallet} from '../../../helpers'
 type Choice = 'rock' | 'paper' | 'scissors' | null;
 type GameResult = 'win' | 'lose' | 'draw' | null;
 
 const choices: Choice[] = ['rock', 'paper', 'scissors'];
 
-const RockPaperScissors: React.FC = () => {
+const RockPaperScissors = ({players,totalBetAmt}) => {
   const [playerChoice, setPlayerChoice] = useState<Choice>(null);
   const [computerChoice, setComputerChoice] = useState<Choice>(null);
   const [result, setResult] = useState<GameResult>(null);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [scores, setScores] = useState({ player: 0, computer: 0 });
+  const {
+    setWalletBalance, walletData} = useContext(walletContext);
+   const {walletAddress, walletBalance} = walletData;
 
   const getChoiceIcon = (choice: Choice, className = 'w-full h-full') => {
     switch (choice) {
@@ -75,7 +79,58 @@ const RockPaperScissors: React.FC = () => {
     }
   }, [countdown, playerChoice]);
 
+  const returnMoney = async (moneyToAdd,newAmt, walletAddress) =>{
+    const res = await depositIntoWallet(moneyToAdd, walletAddress );
+    console.log(">>res",res);
+    if(res)
+    {
+      setWalletBalance(newAmt);
+    }
+    
+  }
+
+  const playAgainWithdraw = async (walletAddress,amountToWithdraw, newAmt)=>{
+    console.log("Widhdraing for new game", amountToWithdraw, newAmt);
+    const res = await withdrawFromWallet(amountToWithdraw, walletAddress)
+    console.log(">>res",res);
+    if(res)
+    {
+      setWalletBalance(newAmt);
+    }
+  }
+
+
+
+
+
+  useEffect(()=>{
+     if(result==="win")
+     {
+      const moneyToAdd = totalBetAmt;
+      const newAmt = walletBalance + totalBetAmt;
+      const res = depositIntoWallet(moneyToAdd, walletAddress )
+      if(res)
+      {
+        setWalletBalance(newAmt);
+      }
+     }
+     else if(result === "lose")
+     {
+       console.log("Lose");
+       
+     }
+     else if(result === "draw")
+     {
+      const moneyToAdd = totalBetAmt/2;
+      const newAmt = walletBalance + totalBetAmt/2;
+      console.log(">>> DRAW RPS", newAmt);
+      returnMoney(moneyToAdd,newAmt, walletAddress)
+     }
+  }, [result])
+
   const resetGame = () => {
+    const newAmt = walletBalance-totalBetAmt/2;
+    playAgainWithdraw(walletAddress,totalBetAmt/2, newAmt);
     setPlayerChoice(null);
     setComputerChoice(null);
     setResult(null);
@@ -187,7 +242,7 @@ const RockPaperScissors: React.FC = () => {
                   transition-colors flex items-center gap-2 mx-auto border border-blue-500/50"
               >
                 <RotateCcw className="w-4 h-4" />
-                Play Again
+                Play Again with ${totalBetAmt/2}
               </button>
             </motion.div>
           )}

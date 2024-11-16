@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { X, Circle, Trophy } from 'lucide-react';
 import { motion } from 'framer-motion';
+import walletContext from '../../../contexts/WalletContext'
+import {depositIntoWallet, withdrawFromWallet} from '../../../helpers'
 
 interface TicTacToeProps {
   players: {
@@ -15,7 +17,7 @@ const winningCombinations = [
   [0, 4, 8], [2, 4, 6] // Diagonals
 ];
 
-const TicTacToe: React.FC<TicTacToeProps> = ({ players }) => {
+const TicTacToe: React.FC<TicTacToeProps> = ({ players, totalBetAmt }) => {
   const [board, setBoard] = useState<(string | null)[]>(Array(9).fill(null));
   const [currentPlayer, setCurrentPlayer] = useState<'X' | 'O'>('X');
   const [winner, setWinner] = useState<'X' | 'O' | null>(null);
@@ -23,6 +25,9 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ players }) => {
   const [isDraw, setIsDraw] = useState(false);
   const [isComputerThinking, setIsComputerThinking] = useState(false);
   const [difficulty] = useState<'hard' | 'medium'>('hard');
+  const {
+    setWalletBalance, walletData} = useContext(walletContext);
+   const {walletAddress, walletBalance} = walletData;
 
   const findWinningLines = (squares: (string | null)[]): number[][] => {
     const winningLines: number[][] = [];
@@ -128,16 +133,77 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ players }) => {
     setBoard(newBoard);
 
     const gameWinner = checkWinner(newBoard);
+    console.log("gameWinner>",gameWinner);
+    
     if (gameWinner) {
       setWinner(gameWinner as 'X' | 'O');
       setWinningLine(findWinningLines(newBoard)[0]);
+      // call add money
     } else if (!newBoard.includes(null)) {
       setIsDraw(true);
+      // call add money
     } else {
       setCurrentPlayer('X');
     }
     setIsComputerThinking(false);
   };
+
+  const returnMoney = async (moneyToAdd,newAmt, walletAddress) =>{
+    const res = await depositIntoWallet(moneyToAdd, walletAddress );
+    console.log(">>res",res);
+    if(res)
+    {
+      setWalletBalance(newAmt);
+    }
+    
+  }
+
+  const playAgainWithdraw = async (walletAddress,amountToWithdraw, newAmt)=>{
+    console.log("Widhdraing for new game", amountToWithdraw, newAmt);
+    const res = await withdrawFromWallet(amountToWithdraw, walletAddress)
+    console.log(">>res",res);
+    if(res)
+    {
+      setWalletBalance(newAmt);
+    }
+  }
+
+
+
+  useEffect(()=>{
+    
+  
+     if(winner === 'O')
+     {
+        // computer win
+        // deduct money, no change
+     }
+     else if(winner==='X')
+     {
+        // you win , add money
+        // depositWa
+        const moneyToAdd = totalBetAmt;
+        const newAmt = walletBalance + totalBetAmt;
+        const res = depositIntoWallet(moneyToAdd, walletAddress )
+        if(res)
+        {
+          setWalletBalance(newAmt);
+        }
+     }
+     else if(isDraw){
+        // draw, add same money back
+        const moneyToAdd = totalBetAmt/2;
+        const newAmt = walletBalance + totalBetAmt/2;
+        console.log(">>> DRAW", newAmt);
+
+        // const res = depositIntoWallet(newAmt, walletAddress );
+        
+        returnMoney(moneyToAdd,newAmt, walletAddress)
+        
+        
+     }
+     
+  }, [winner, isDraw])
 
   const handleClick = (index: number) => {
     if (board[index] || winner || currentPlayer === 'O' || isComputerThinking) return;
@@ -147,6 +213,8 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ players }) => {
     setBoard(newBoard);
 
     const gameWinner = checkWinner(newBoard);
+    console.log("gameWinner",gameWinner);
+    
     if (gameWinner) {
       setWinner(gameWinner as 'X' | 'O');
       setWinningLine(findWinningLines(newBoard)[0]);
@@ -162,8 +230,12 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ players }) => {
       makeComputerMove();
     }
   }, [currentPlayer]);
+   
+   
 
   const resetGame = () => {
+    const newAmt = walletBalance-totalBetAmt/2;
+    playAgainWithdraw(walletAddress,totalBetAmt/2, newAmt);
     setBoard(Array(9).fill(null));
     setCurrentPlayer('X');
     setWinner(null);
@@ -263,7 +335,7 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ players }) => {
             className="bg-blue-600/80 hover:bg-blue-700/80 px-6 py-2 rounded-lg font-medium
               transition-colors duration-200"
           >
-            Play Again
+            Play Again with ${totalBetAmt/2}
           </button>
         </motion.div>
       )}

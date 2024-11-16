@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trophy, Dice4, CoinsIcon, ArrowRight } from 'lucide-react';
-
+import walletContext from '../../../contexts/WalletContext'
+import {depositIntoWallet, withdrawFromWallet} from '../../../helpers'
 interface DiceBettingProps {
   players: {
     id: string;
@@ -19,7 +20,7 @@ interface Bet {
   multiplier: number;
 }
 
-const DiceBetting: React.FC<DiceBettingProps> = ({ players }) => {
+const DiceBetting: React.FC<DiceBettingProps> = ({ players,totalBetAmt }) => {
   const [selectedBet, setSelectedBet] = useState<Bet | null>(null);
   const [coins, setCoins] = useState(1000);
   const [betAmount, setBetAmount] = useState(100);
@@ -27,13 +28,16 @@ const DiceBetting: React.FC<DiceBettingProps> = ({ players }) => {
   const [diceNumber, setDiceNumber] = useState<number | null>(null);
   const [result, setResult] = useState<BetResult>(null);
   const [showResult, setShowResult] = useState(false);
+  const {
+    setWalletBalance, walletData} = useContext(walletContext);
+   const {walletAddress, walletBalance} = walletData;
 
   const bettingOptions: Bet[] = [
     { type: 'odd', description: 'Bet on Odd Number', multiplier: 2 },
     { type: 'even', description: 'Bet on Even Number', multiplier: 2 },
-    { type: 'multiple2', description: 'Multiple of 2', multiplier: 3 },
-    { type: 'multiple3', description: 'Multiple of 3', multiplier: 3 },
-    { type: 'exact', description: 'Exact Number', multiplier: 6 },
+    { type: 'multiple2', description: 'Multiple of 2', multiplier: 2 },
+    { type: 'multiple3', description: 'Multiple of 3', multiplier: 2 },
+    { type: 'exact', description: 'Exact Number', multiplier: 2 },
   ];
 
   const checkWin = (number: number, bet: Bet): boolean => {
@@ -73,6 +77,7 @@ const DiceBetting: React.FC<DiceBettingProps> = ({ players }) => {
     const isWin = checkWin(finalNumber, selectedBet);
     setResult(isWin ? 'win' : 'lose');
 
+
     // Update coins
     if (isWin) {
       setCoins(prev => prev + (betAmount * selectedBet.multiplier));
@@ -109,13 +114,48 @@ const DiceBetting: React.FC<DiceBettingProps> = ({ players }) => {
     </div>
   );
 
+  const playAgainWithdraw = async (walletAddress,amountToWithdraw, newAmt)=>{
+    console.log("Widhdraing for new game", amountToWithdraw, newAmt);
+    const res = await withdrawFromWallet(amountToWithdraw, walletAddress)
+    console.log(">>res",res);
+    if(res)
+    {
+      setWalletBalance(newAmt);
+    }
+  }
+
+  const handleNewBet = async () =>{
+    const newAmt = walletBalance-totalBetAmt/2;
+    playAgainWithdraw(walletAddress,totalBetAmt/2, newAmt);
+    setSelectedBet(null);
+    setShowResult(false);
+    setDiceNumber(null);
+
+  }
+
+  useEffect(()=>{
+    if(result==="win")
+    {
+      const moneyToAdd = totalBetAmt;
+      const newAmt = walletBalance + totalBetAmt;
+      const res = depositIntoWallet(moneyToAdd, walletAddress )
+      if(res)
+      {
+        setWalletBalance(newAmt);
+      }
+    }
+    else{
+      console.log("LOST");
+    }
+  }, [result])
+
   return (
     <div className="flex flex-col items-center justify-center w-full h-full p-4">
       {/* Header */}
       <div className="flex items-center gap-4 mb-8">
         <div className="flex items-center gap-2 bg-yellow-500/20 px-4 py-2 rounded-lg">
           <CoinsIcon className="w-5 h-5 text-yellow-400" />
-          <span className="font-bold text-yellow-400">{coins}</span>
+          <span className="font-bold text-yellow-400">{totalBetAmt}</span>
         </div>
       </div>
 
@@ -171,7 +211,7 @@ const DiceBetting: React.FC<DiceBettingProps> = ({ players }) => {
             )}
           </div>
 
-          <div className="flex items-center gap-4">
+          {/* <div className="flex items-center gap-4">
             <input
               type="range"
               min="100"
@@ -182,7 +222,7 @@ const DiceBetting: React.FC<DiceBettingProps> = ({ players }) => {
               className="w-48"
             />
             <span className="font-bold text-yellow-400">{betAmount}</span>
-          </div>
+          </div> */}
 
           <button
             onClick={rollDice}
@@ -239,9 +279,8 @@ const DiceBetting: React.FC<DiceBettingProps> = ({ players }) => {
             <div className="flex gap-4 justify-center">
               <button
                 onClick={() => {
-                  setSelectedBet(null);
-                  setShowResult(false);
-                  setDiceNumber(null);
+                  handleNewBet();
+                
                 }}
                 className="bg-gray-700/50 hover:bg-gray-600/50 px-6 py-2 rounded-lg font-medium
                   transition-colors"
@@ -250,8 +289,11 @@ const DiceBetting: React.FC<DiceBettingProps> = ({ players }) => {
               </button>
               <button
                 onClick={() => {
+                  const newAmt = walletBalance-totalBetAmt/2;
+                  playAgainWithdraw(walletAddress,totalBetAmt/2, newAmt);
                   setShowResult(false);
                   setDiceNumber(null);
+
                 }}
                 className="bg-blue-600/80 hover:bg-blue-700/80 px-6 py-2 rounded-lg font-medium
                   transition-colors flex items-center gap-2"

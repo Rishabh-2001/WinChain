@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { X, Wallet, Plus, Minus } from 'lucide-react';
-
+import walletContext from '../../contexts/WalletContext'
+import { useSDK } from '@metamask/sdk-react';
+import { ethers } from 'ethers';
 interface BetModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -11,6 +13,18 @@ const BetModal: React.FC<BetModalProps> = ({ isOpen, onClose, onConfirm }) => {
   const [betAmount, setBetAmount] = useState<number>(50);
   const [isWalletConnected, setWalletConnected] = useState(false);
   const [error, setError] = useState<string>('');
+  // const [connected, setConnected] = useState(false);
+
+  const [userAccount, setUserAccount] = useState('');
+  const [loading, setLoading] = useState(true);
+  // const [error, setError] = useState(null);
+ 
+
+  const { walletData,setWalletAddress, setWalletBalance } = useContext(walletContext);
+  const { sdk, connected, connecting, account, chainId, provider } = useSDK();
+
+
+  const {WalletBalance, walletAddress} = walletData;
 
   const MIN_BET = 50;
   const MAX_BET = 10000;
@@ -21,6 +35,10 @@ const BetModal: React.FC<BetModalProps> = ({ isOpen, onClose, onConfirm }) => {
     }
     if (amount > MAX_BET) {
       return `Maximum bet amount is $${MAX_BET}`;
+    }
+    if(amount>WalletBalance)
+    {
+      return `Insufficient Wallet balance`
     }
     return '';
   };
@@ -44,10 +62,6 @@ const BetModal: React.FC<BetModalProps> = ({ isOpen, onClose, onConfirm }) => {
     setError(validateBetAmount(numValue));
   };
 
-  const handleConnectWallet = () => {
-    setWalletConnected(true);
-  };
-
   const handleConfirm = () => {
     const validationError = validateBetAmount(betAmount);
     if (!validationError) {
@@ -55,7 +69,7 @@ const BetModal: React.FC<BetModalProps> = ({ isOpen, onClose, onConfirm }) => {
     }
   };
 
-  const isPlayDisabled = !isWalletConnected || !!validateBetAmount(betAmount);
+  const isPlayDisabled = !connected || !!validateBetAmount(betAmount);
 
   if (!isOpen) return null;
 
@@ -110,7 +124,7 @@ const BetModal: React.FC<BetModalProps> = ({ isOpen, onClose, onConfirm }) => {
         </div>
 
         {/* Wallet Connection */}
-        <div className="mb-8">
+{/* {!walletAddress &&        <div className="mb-8">
           <button
             onClick={handleConnectWallet}
             className={`w-full py-3 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors ${
@@ -127,7 +141,7 @@ const BetModal: React.FC<BetModalProps> = ({ isOpen, onClose, onConfirm }) => {
               Connect wallet to continue
             </p>
           )}
-        </div>
+        </div>} */}
 
         {/* Confirm Button */}
         <button

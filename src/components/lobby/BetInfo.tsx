@@ -8,6 +8,7 @@ interface BetInfoProps {
 
 const BetInfo: React.FC<BetInfoProps> = ({ playerBet, computerBet }) => {
   const totalPot = playerBet + computerBet;
+  
 
   return (
     <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700/50 mb-6 ">

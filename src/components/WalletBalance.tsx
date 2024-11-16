@@ -1,19 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { ChevronDown, ArrowUpToLine, ArrowDownToLine } from 'lucide-react';
 import TransactionModal from './TransactionModal';
+import walletContext from '../contexts/WalletContext'
 
 const WalletBalance = ({ connected, userAccount, setIsNewUser, balance, setBalance }) => {
   const [showOptions, setShowOptions] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [modalType, setModalType] = useState<'deposit' | 'withdraw' | null>(null);
-
+  const {
+    setWalletBalance, walletData} = useContext(walletContext);
+   const {walletBalance} = walletData;
   const getWalletBal = async (address: string) => {
     try {
       setLoading(true);
       const res = await fetch(`${import.meta.env.VITE_SERVER_API_ORIGIN}/wallet/${address}`);
       const data = await res.json();
       setBalance(data?.balance);
+      setWalletBalance(data?.balance)
       setIsNewUser(data?.newUser);
       return data.balance || '0';
     } catch (err) {
@@ -88,7 +92,7 @@ const WalletBalance = ({ connected, userAccount, setIsNewUser, balance, setBalan
             <span className="px-3 py-1.5 rounded-md text-sm bg-green-600/80 group-hover:bg-green-600 transition-colors">
               {renderAccount(userAccount)}
             </span>
-            <span className="font-medium">{balance}</span>
+            <span className="font-medium">{walletBalance}</span>
             <ChevronDown 
               className={`h-4 w-4 transition-transform duration-200 ${showOptions ? 'rotate-180' : ''}`} 
             />

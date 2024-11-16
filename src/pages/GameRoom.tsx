@@ -31,6 +31,7 @@ const GameRoom = () => {
   const [chatMessage, setChatMessage] = useState('');
   const [isChatVisible, setIsChatVisible] = useState(true);
   const betAmount = location.state?.betAmount || 10;
+  const [multiplier,setMultiplier] = useState(2);
 
   useEffect(() => {
     setRoom({
@@ -102,7 +103,7 @@ const GameRoom = () => {
                   </div>
                 ) : (
                   <div>
-                      <LoadGame gameId={gameId} players={room.currentPlayers}  />
+                      <LoadGame gameId={gameId} players={room.currentPlayers} totalBetAmt={betAmount*2}  />
                   </div>
                 )}
               </div>

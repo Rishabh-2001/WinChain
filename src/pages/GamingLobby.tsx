@@ -1,16 +1,46 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Bot, Users, Lock, MessageCircle, X } from 'lucide-react';
 import CreateRoomModal from '../components/lobby/CreateRoomModal';
 import BetModal from '../components/lobby/BetModal';
+import walletContext from '../contexts/WalletContext'
+import toast from 'react-hot-toast';
+import axios from 'axios';
 
 const GamingLobby = () => {
   const { gameId } = useParams();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
   const [chatMessage, setChatMessage] = useState('');
   const [isBetModalOpen, setBetModalOpen] = useState(false);
+  const [error, setError] = useState(null);
+
   const [isChatOpen, setIsChatOpen] = useState(true);
+  const { walletData, setWalletBalance } = useContext(walletContext);
+  const {balance, walletAddress} = walletData;
+
+
+
+  const getWalletBal = async (address: string) => {
+    try {
+      setLoading(true);
+      const res = await fetch(`${import.meta.env.VITE_SERVER_API_ORIGIN}/wallet/${address}`);
+      const data = await res.json();
+      // setBalance(data?.balance);
+      setWalletBalance(data?.balance)
+      // setIsNewUser(data?.newUser);
+      return data.balance || '0';
+    } catch (err) {
+      console.error('Error fetching wallet balance:', err);
+      setError('Failed to fetch wallet balance');
+      return '0';
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   const gameNames: Record<string, string> = {
     'tic-tac-toe': 'Tic Tac Toe',
@@ -32,14 +62,54 @@ const GamingLobby = () => {
     setBetModalOpen(true);
   };
 
+  const handleTransactions = async (amount) =>{
+    const type = 'withdraw';
+    try {
+      const requestBody = {
+        walletAddress: walletAddress,
+        amount: parseFloat(amount),
+      };
+  
+      // Step 2: Make the API request after deposit is successful
+      const response = await axios.post(
+        `${import.meta.env.VITE_SERVER_API_ORIGIN}${type}`,
+        requestBody,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+  
+      // Handle the response from the API
+      const data = response.data;
+      console.log('game money cut', data);
+  
+      if (response.status !== 200) {
+        throw new Error(data.message || `Failed to ${type}`);
+      }
+  
+      // On success, notify the user and perform further actions
+      toast.success(`${type.charAt(0).toUpperCase() + type.slice(1)} successful!`);
+      // onSuccess();
+      if(walletAddress)
+      {
+        getWalletBal(walletAddress);
+      }
+      setBetModalOpen(false);
+    } catch (error) {
+       console.log("Error found", error);
+    }
+  }
+
   const handleBetConfirm = (betAmount: number) => {
     setBetModalOpen(false);
+    handleTransactions(betAmount);
     navigate(`/games/${gameId}/room/computer`, { state: { betAmount } });
   };
 
-
+  console.log("balance, walletAddress, walletConnected",walletData, balance, walletAddress);
   
-
   return (
     <div className="relative flex h-[calc(100vh-6rem)] bg-gray-900 mt-12">
       {/* Chat Toggle Button (Mobile) */}

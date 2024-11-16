@@ -1,3 +1,7 @@
+import axios from "axios";
+import toast from "react-hot-toast";
+
+ 
 export async function getConnectedWalletInfo (){
   
         // Check if MetaMask is available in the browser
@@ -29,4 +33,82 @@ export async function getConnectedWalletInfo (){
         //   setConnecting(false); // End loading state
         }
    
+}
+
+
+
+export async function depositIntoWallet(amount, walletAddress)
+{
+    const type = 'deposit';
+    try {
+      const requestBody = {
+        walletAddress: walletAddress,
+        amount: parseFloat(amount),
+      };
+  
+      // Step 2: Make the API request after deposit is successful
+      const response = await axios.post(
+        `${import.meta.env.VITE_SERVER_API_ORIGIN}${type}`,
+        requestBody,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+  
+      // Handle the response from the API
+      const data = response.data;
+      console.log('>>game money cut', data);
+  
+      if (response.status !== 200) {
+        throw new Error(data.message || `Failed to ${type}`);
+      }
+  
+      // On success, notify the user and perform further actions
+      toast.success(`${type.charAt(0).toUpperCase() + type.slice(1)} successful!`);
+      return true;
+    } catch (error) {
+       console.log("Error found", error);
+       return false;
+    }
+
+}
+
+export async function withdrawFromWallet(amount, walletAddress)
+{
+    const type = 'withdraw';
+    try {
+      const requestBody = {
+        walletAddress: walletAddress,
+        amount: parseFloat(amount),
+      };
+  
+      // Step 2: Make the API request after deposit is successful
+      const response = await axios.post(
+        `${import.meta.env.VITE_SERVER_API_ORIGIN}${type}`,
+        requestBody,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+  
+      // Handle the response from the API
+      const data = response.data;
+      console.log('>>game money cut', data);
+  
+      if (response.status !== 200) {
+        throw new Error(data.message || `Failed to ${type}`);
+      }
+  
+      // On success, notify the user and perform further actions
+      toast.success(`${type.charAt(0).toUpperCase() + type.slice(1)} successful!`);
+      return true;
+    } catch (error) {
+       console.log("Error found", error);
+       return false;
+    }
+
 }

@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Wallet } from 'lucide-react';
 import { useSDK } from '@metamask/sdk-react';
 import { ethers } from 'ethers';
+import walletContext from '../contexts/WalletContext';
+
 
 interface WalletButtonProps {
   setConnected?: (connected: boolean) => void;
@@ -10,6 +12,10 @@ interface WalletButtonProps {
 
 const WalletButton: React.FC<WalletButtonProps> = ({ setConnected, setUserAccount }) => {
   const { sdk, connected, connecting, account, chainId, provider } = useSDK();
+  const {
+    setWalletAddress,
+    setWalletBalance} = useContext(walletContext);
+
   // const [currentUser,setCurrentUser] = useState('')
 
   const connectWallet = async () => {
@@ -23,7 +29,13 @@ const WalletButton: React.FC<WalletButtonProps> = ({ setConnected, setUserAccoun
       
       // If we have the setter functions, call them
       if (setConnected) setConnected(true);
-      if (setUserAccount && accounts?.[0]) setUserAccount(accounts[0]);
+      // if (setUserAccount && accounts?.[0]) setUserAccount(accounts[0]);
+      if(setUserAccount && accounts?.[0])
+      {
+        setUserAccount(accounts[0]);
+        setWalletAddress(accounts[0]);
+      }
+
       console.log("accounts",accounts);
       
 
@@ -32,6 +44,12 @@ const WalletButton: React.FC<WalletButtonProps> = ({ setConnected, setUserAccoun
         const ethersProvider = new ethers.providers.Web3Provider(provider);
         const signer = ethersProvider.getSigner();
         console.log("signer",signer);
+        const providerNetwork = await ethersProvider.getNetwork();
+       const chainId = providerNetwork?.chainId 
+        
+        
+                 
+
         
         // You can use the signer here for transactions if needed
       }
@@ -45,7 +63,13 @@ const WalletButton: React.FC<WalletButtonProps> = ({ setConnected, setUserAccoun
       if (!sdk) return;
       await sdk.terminate();
       if (setConnected) setConnected(false);
-      if (setUserAccount) setUserAccount('');
+      // if (setUserAccount) setUserAccount('');
+      if(setUserAccount)
+      {
+        setUserAccount('');
+        setWalletAddress('');
+      }
+     
     } catch (err) {
       console.error('Failed to disconnect:', err);
     }
@@ -62,7 +86,7 @@ const WalletButton: React.FC<WalletButtonProps> = ({ setConnected, setUserAccoun
         onClick={connected ? disconnectWallet : connectWallet}
         disabled={connecting}
         className={`
-          w-full px-6 py-3 rounded-xl transition-all duration-200 
+          w-full px-4 py-2 rounded-xl transition-all  text-md duration-200 
           flex items-center justify-center gap-3
           ${connected 
             ? 'bg-blue-600/20 hover:bg-blue-600/30 text-blue-400' 
@@ -80,7 +104,7 @@ const WalletButton: React.FC<WalletButtonProps> = ({ setConnected, setUserAccoun
         </span>
         
         <span className="sm:hidden">
-          {connecting ? '...' : connected ? `${account?.slice(0, 4)}...` : 'Connect'}
+          {connecting ? '...' : connected ? `${account?.slice(0, 4)}...` : 'Connect Wallet'}
         </span>
       </button>
 
