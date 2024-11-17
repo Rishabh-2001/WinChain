@@ -4,7 +4,7 @@ import { Menu, User, X } from 'lucide-react';
 import WalletButton from './WalletButton';
 import WalletBalance from './WalletBalance';
 import TokenClaim from './TokenClaim';
-
+import logo from '../images/logo.svg'
 const Navbar = () => {
   const location = useLocation();
   const [userAccount, setUserAccount] = useState('');
@@ -19,7 +19,7 @@ const Navbar = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Left section */}
-          <div className="flex items-center gap-4">
+          {/* <div className="flex items-center gap-4">
             <button 
               className="p-1 text-gray-400 hover:text-white lg:hidden transition-colors duration-200"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -29,7 +29,22 @@ const Navbar = () => {
             <Link to="/" className="text-xl font-bold text-white hover:text-blue-400 transition-colors duration-200">
               ZiBet
             </Link>
-          </div>
+          </div> */}
+          <div className="flex items-center gap-4">
+  <button
+    className="p-1 text-gray-400 hover:text-white lg:hidden transition-colors duration-200"
+    onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+  >
+    {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+  </button>
+
+  {/* Logo + Text */}
+  <Link to="/" className="flex items-center gap-2 text-xl font-bold text-white hover:text-blue-400 transition-colors duration-200">
+    <img src={logo} alt="ZiBet Logo" className="h-16 w-32" />
+    <span>ZiBet</span>
+  </Link>
+</div>
+
 
           {/* Desktop Menu */}
           <div className="hidden lg:flex items-center gap-6">
