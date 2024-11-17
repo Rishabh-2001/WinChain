@@ -17,7 +17,7 @@ const HeroSection = () => {
             Play & Earn
           </span>
           <br />
-          Next-Gen Gaming Platform
+          Next-Gen Web3 Gaming Platform
         </h1>
         
         <p className="text-gray-400 text-lg max-w-2xl mx-auto">

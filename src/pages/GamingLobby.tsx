@@ -17,7 +17,7 @@ const GamingLobby = () => {
   const [isBetModalOpen, setBetModalOpen] = useState(false);
   const [error, setError] = useState(null);
 
-  const [isChatOpen, setIsChatOpen] = useState(true);
+  const [isChatOpen, setIsChatOpen] = useState(false);
   const { walletData, setWalletBalance } = useContext(walletContext);
   const {balance, walletAddress} = walletData;
 
@@ -181,7 +181,7 @@ const GamingLobby = () => {
           </div>
 
           {/* Game Options */}
-          <div className="max-w-2xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="max-w-2xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 ">
             {/* Play with Computer */}
             <div 
               onClick={handlePlayWithComputer}

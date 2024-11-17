@@ -59,8 +59,6 @@ export async function depositIntoWallet(amount, walletAddress)
   
       // Handle the response from the API
       const data = response.data;
-      console.log('>>game money cut', data);
-  
       if (response.status !== 200) {
         throw new Error(data.message || `Failed to ${type}`);
       }

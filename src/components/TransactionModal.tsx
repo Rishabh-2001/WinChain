@@ -156,6 +156,11 @@ const TransactionModal: React.FC<TransactionModalProps> = ({
       // You can use the signer here for transactions if needed
     }
   };
+//   let formatedEthBalance = 0.00 ;
+//   let ethBalanceInEth = Number(ethBalance) / 1e18;
+
+// // Format the result to 2 decimal places
+// let formatedEthBalance = ethBalanceInEth.toFixed(2);
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-[5vh] px-4">
@@ -195,9 +200,11 @@ const TransactionModal: React.FC<TransactionModalProps> = ({
             </div>
           </div>
           {type === "deposit" && (
-            <span className="text-sm text-red-400 mt-2 mb-4">
-              Total Available Balance: ${ethBalance}ETH
-            </span>
+   <span className="text-sm text-red-400 mt-2 mb-4">
+   Total Available Balance: {isNaN(parseFloat(ethBalance)) ? '0.0000' : parseFloat(ethBalance).toFixed(4)} ETH
+ </span>
+ 
+
           )}
 
           <button

@@ -150,7 +150,6 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ players, totalBetAmt }) => {
 
   const returnMoney = async (moneyToAdd,newAmt, walletAddress) =>{
     const res = await depositIntoWallet(moneyToAdd, walletAddress );
-    console.log(">>res",res);
     if(res)
     {
       setWalletBalance(newAmt);
@@ -159,9 +158,7 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ players, totalBetAmt }) => {
   }
 
   const playAgainWithdraw = async (walletAddress,amountToWithdraw, newAmt)=>{
-    console.log("Widhdraing for new game", amountToWithdraw, newAmt);
     const res = await withdrawFromWallet(amountToWithdraw, walletAddress)
-    console.log(">>res",res);
     if(res)
     {
       setWalletBalance(newAmt);
@@ -195,9 +192,6 @@ const TicTacToe: React.FC<TicTacToeProps> = ({ players, totalBetAmt }) => {
         const moneyToAdd = totalBetAmt/2;
         const newAmt = walletBalance + totalBetAmt/2;
         console.log(">>> DRAW", newAmt);
-
-        // const res = depositIntoWallet(newAmt, walletAddress );
-        
         returnMoney(moneyToAdd,newAmt, walletAddress)
         
         

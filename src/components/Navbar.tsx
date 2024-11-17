@@ -27,7 +27,7 @@ const Navbar = () => {
               {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
             <Link to="/" className="text-xl font-bold text-white hover:text-blue-400 transition-colors duration-200">
-              GameHub
+              ZiBet
             </Link>
           </div>
 
